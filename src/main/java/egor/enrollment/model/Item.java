@@ -1,5 +1,6 @@
 package egor.enrollment.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import egor.enrollment.components.schemas.SystemItemType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,5 +44,18 @@ public class Item {
 
         this.date = date;
         this.size = size;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id='" + id + '\'' +
+                ", url='" + url + '\'' +
+                ", type=" + type +
+                ", parent=" + parent +
+                ", date=" + date +
+                ", size=" + size +
+                ", children=" + children.size() +
+                '}';
     }
 }

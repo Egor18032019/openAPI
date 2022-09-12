@@ -2,11 +2,13 @@ package egor.enrollment.components.schemas;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
+@EqualsAndHashCode(callSuper = true)
 @Data //TODO обдумать тут
 @AllArgsConstructor
-public class SystemItem {
+public class SystemItem extends ResponseAbs {
     private  String id;
     private  String url;
     private  String type;

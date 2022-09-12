@@ -1,10 +1,9 @@
 package egor.enrollment.services;
 
-import egor.enrollment.components.schemas.SystemItemImport;
-import egor.enrollment.components.schemas.SystemItemImportRequest;
-import egor.enrollment.components.schemas.SystemItemType;
+import egor.enrollment.components.schemas.*;
 import egor.enrollment.model.Item;
 import egor.enrollment.repository.ItemRepository;
+import egor.enrollment.utility.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -24,7 +24,7 @@ public class ItemService {
 
 
     @Transactional
-    public void saveProducts(SystemItemImportRequest request) {
+    public void saveItems(SystemItemImportRequest request) {
         List<SystemItemImport> items = request.getItems();
         LocalDateTime date = getDate(request.getUpdateDate());
         List<Item> itemsForSaveInDB = new ArrayList<>();
@@ -64,7 +64,7 @@ public class ItemService {
         repository.saveAll(itemsForSaveInDB);
     }
 
-    private LocalDateTime getDate(String strDate) {
+    public LocalDateTime getDate(String strDate) {
         return LocalDateTime.parse(strDate, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH));
     }
 
@@ -100,10 +100,54 @@ public class ItemService {
         Item parent = repository.findByParentId(id);
         LocalDateTime updDate = getDate(date);
         parent.setDate(updDate);
+        Integer newSize = parent.getSize() - item.getSize();
+        parent.setSize(newSize);
         repository.save(parent);
         List<Item> childrenForDelete = item.getChildren();
         repository.deleteAll(childrenForDelete);
         repository.deleteById(id);
 
     }
+
+    public SystemItemHistoryResponse getStatisticItems(LocalDateTime dateEndUnit) {
+
+        LocalDateTime dateStartUnit = dateEndUnit.minusHours(24);
+
+        List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndUnit);
+        SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[stat.size()];
+        for (int i = 0; i < stat.size(); i++) {
+            SystemItemHistoryUnit s = Utils.statisticUnitCreate(stat.get(i));
+            units[i] = s;
+            //TODO сделать в билдер
+        }
+        SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+        systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+        return systemItemHistoryResponse;
+
+    }
+
+    public SystemItemHistoryResponse getStatisticItems(String id, LocalDateTime dateStartUnit, LocalDateTime dateEndTime) {
+        Item node = repository.findById(id).orElse(null);
+        if (node == null) {
+            System.out.println("не в БД ничего");
+            return null;
+        }
+        System.out.println(node.toString());
+        List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndTime);
+        System.out.println(stat.toString());
+        List<Item> filterStat = stat.stream().filter(f -> f.getId().equals(id)).collect(Collectors.toList());
+        System.out.println(filterStat);
+
+        // один вроде должен быть же
+        // почему тогда ответ массивом ?
+        SystemItemHistoryUnit s = Utils.statisticUnitCreate(filterStat.get(0));
+        SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+        units[0] = s;
+        SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+        systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+        return systemItemHistoryResponse;
+
+
+    }
+
 }

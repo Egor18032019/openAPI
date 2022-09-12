@@ -1,9 +1,7 @@
 package egor.enrollment.controllers;
 
+import egor.enrollment.components.schemas.*;
 import egor.enrollment.components.schemas.Error;
-import egor.enrollment.components.schemas.SystemItem;
-import egor.enrollment.components.schemas.SystemItemHistoryResponse;
-import egor.enrollment.components.schemas.SystemItemImportRequest;
 import egor.enrollment.model.Item;
 import egor.enrollment.services.ItemService;
 import egor.enrollment.services.ValidationService;
@@ -14,7 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class ItemController {
@@ -34,7 +35,7 @@ public class ItemController {
         //TODO так ли ??
         boolean isValidRequest = validationService.isSystemItemImportRequest(request);
         if (isValidRequest) {
-            service.saveProducts(request);
+            service.saveItems(request);
             response = new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
         } else response = new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
         return response;
@@ -60,60 +61,72 @@ public class ItemController {
     }
 
     @GetMapping("/nodes/{id}")
-    public ResponseEntity<SystemItem> getItems(@PathVariable String id) {
-        ResponseEntity<SystemItem> response;
+    public ResponseEntity<ResponseAbs> getItems(@PathVariable String id) {
+
         if (true) {
 // TODO когда выдавать 404 ?
             Item item = service.findItemInDB(id);
-            if (item!=null) {
+            System.out.println(item);
+            if (item != null) {
 // Item in SystemItem
                 SystemItem systemItem = ConverterItemToSystemItem.toShopUnit(item);
-                // TODO dodelat
-                response = new ResponseEntity<>(systemItem, HttpStatus.OK);
+                return new ResponseEntity<>(systemItem, HttpStatus.OK);
             } else {
-                // TODO ошибки по другому
-                response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new Error(404, "Item not found"), HttpStatus.BAD_REQUEST);
             }
         } else {
-            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
         }
-        return response;
+
     }
 
-    @GetMapping(value = "updates")
-    public ResponseEntity<SystemItemHistoryResponse> getFiles(
+    @GetMapping(value = "/updates")
+    public ResponseEntity<ResponseAbs> getFiles(
             @RequestParam String date
     ) {
-        if (true) {
+        LocalDateTime dateTime = null;
+        try {
+            dateTime = service.getDate(date);
+        } catch (Exception e) {
+            System.out.println("catch ");
+            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
 
-            return new ResponseEntity<>(new SystemItemHistoryResponse(null), HttpStatus.OK);
-        } else {
-            // TODO ошибки по другому
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+
+        System.out.println(date);
+        SystemItemHistoryResponse response = service.getStatisticItems(dateTime);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     @GetMapping(value = "node/{id}/history")
-    public ResponseEntity<SystemItemHistoryResponse> getStatistic(@PathVariable String id,
-                                                                  @RequestParam(required = false) String dateStart,
-                                                                  @RequestParam(required = false) String dateEnd) {
-        System.out.println("Get history from: " + dateStart + " to: " + dateEnd);
-        ResponseEntity<SystemItemHistoryResponse> response;
-        ZonedDateTime dateStartZ = ZonedDateTime.parse(dateStart);
-        ZonedDateTime dateEndZ = ZonedDateTime.parse(dateEnd);
-        if (true) {
+    public ResponseEntity<ResponseAbs> getStatistic(@PathVariable String id,
+                                                    @RequestParam(required = false) Optional<String> dateStart,
+                                                    @RequestParam(required = false) Optional<String> dateEnd) {
+        LocalDateTime dateStartTime = null;
+        LocalDateTime dateEndTime = null;
+        if (dateEnd.isPresent() && dateStart.isPresent()) {
+            try {
+                dateStartTime = service.getDate(dateStart.get());
+                dateEndTime = service.getDate(dateEnd.get());
+            } catch (Exception e) {
+                System.out.println("catch ");
+                return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
 
-            if (true) {
-
-                response = new ResponseEntity<>(new SystemItemHistoryResponse(null), HttpStatus.OK);
-            } else {
-                // TODO ошибки по другому
-                response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } else {
-            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return response;
+        System.out.println("Get history from: " + dateStart + " to: " + dateEnd);
+
+        SystemItemHistoryResponse response = service.getStatisticItems(id, dateStartTime, dateEndTime);
+        if (response != null) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new Error(404, "Item not found"), HttpStatus.NOT_FOUND);
+
+        }
+
+
     }
 
     @GetMapping(value = "test")
@@ -137,7 +150,7 @@ public class ItemController {
                 "parentId": null
             }
         ],
-        "updateDate": "2022-02-01T12:00:00Z"
+        "updateDate": "2022-09-09T12:00:00Z"
     },
     {
         "items": [

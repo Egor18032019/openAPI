@@ -15,6 +15,7 @@ public class ConverterItemToSystemItem {
         String parentId = null;
         if (null != item.getParent()) parentId = item.getParent().getId();
         String type = item.getType().toString();
+        //TODO          - размер папки - это суммарный размер всех её элементов. Если папка не содержит элементов, то размер равен 0.
         Integer size = item.getSize();
         List<SystemItem> childrenToSystemItemList = new ArrayList<>();
         if (!item.getChildren().isEmpty()) {

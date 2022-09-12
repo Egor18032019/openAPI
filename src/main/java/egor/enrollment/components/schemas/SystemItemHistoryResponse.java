@@ -1,12 +1,13 @@
 package egor.enrollment.components.schemas;
 
-import lombok.Data;
-import lombok.NonNull;
-
-import java.util.List;
-@Data
-public class SystemItemHistoryResponse {
+import lombok.*;
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+public class SystemItemHistoryResponse extends ResponseAbs {
     @NonNull
-    private List<SystemItemHistoryUnit> items;
+    private SystemItemHistoryUnit[] systemItemHistoryUnits;
 }
 

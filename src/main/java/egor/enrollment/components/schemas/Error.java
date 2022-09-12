@@ -1,9 +1,13 @@
 package egor.enrollment.components.schemas;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
-public class Error {
-    private final int code;
-    private final String message;
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+public class Error extends ResponseAbs {
+    private int code;
+    private String message;
 }
