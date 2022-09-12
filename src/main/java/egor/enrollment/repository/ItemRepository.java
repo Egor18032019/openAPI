@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, String> {
     Item findByParentId(String id);
-    List<Item> findAllByDateBetween(LocalDateTime dateStart, LocalDateTime dateEnd);
 }

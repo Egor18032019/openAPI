@@ -4,7 +4,7 @@ import com.sun.istack.NotNull;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -17,5 +17,5 @@ public class Statistics {
     int size;
     @Column
     @NotNull
-    ZonedDateTime date;
+    LocalDateTime date;
 }

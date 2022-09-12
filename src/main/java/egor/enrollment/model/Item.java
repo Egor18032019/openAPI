@@ -46,6 +46,10 @@ public class Item {
         this.size = size;
     }
 
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Statistics> statistics = new ArrayList<>();
+
     @Override
     public String toString() {
         return "Item{" +

@@ -2,6 +2,8 @@ package egor.enrollment.controllers;
 
 import egor.enrollment.components.schemas.*;
 import egor.enrollment.components.schemas.Error;
+import egor.enrollment.exception.BadRequestException;
+import egor.enrollment.exception.NotFoundException;
 import egor.enrollment.model.Item;
 import egor.enrollment.services.ItemService;
 import egor.enrollment.services.ValidationService;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -63,20 +66,16 @@ public class ItemController {
     @GetMapping("/nodes/{id}")
     public ResponseEntity<ResponseAbs> getItems(@PathVariable String id) {
 
-        if (true) {
-// TODO когда выдавать 404 ?
-            Item item = service.findItemInDB(id);
-            System.out.println(item);
-            if (item != null) {
+        Item item = service.findItemInDB(id);
+        System.out.println(item);
+        if (item != null) {
 // Item in SystemItem
-                SystemItem systemItem = ConverterItemToSystemItem.toShopUnit(item);
-                return new ResponseEntity<>(systemItem, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new Error(404, "Item not found"), HttpStatus.BAD_REQUEST);
-            }
+            SystemItem systemItem = ConverterItemToSystemItem.toShopUnit(item);
+            return new ResponseEntity<>(systemItem, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new Error(404, "Item not found"), HttpStatus.BAD_REQUEST);
         }
+
 
     }
 
@@ -106,12 +105,21 @@ public class ItemController {
                                                     @RequestParam(required = false) Optional<String> dateEnd) {
         LocalDateTime dateStartTime = null;
         LocalDateTime dateEndTime = null;
-        if (dateEnd.isPresent() && dateStart.isPresent()) {
+        if (dateEnd.isPresent()) {
             try {
-                dateStartTime = service.getDate(dateStart.get());
                 dateEndTime = service.getDate(dateEnd.get());
             } catch (Exception e) {
-                System.out.println("catch ");
+                System.out.println("dateEnd ");
+                return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+
+            }
+        }
+
+        if (dateStart.isPresent()) {
+            try {
+                dateStartTime = service.getDate(dateStart.get());
+            } catch (Exception e) {
+                System.out.println("dateStartTime ");
                 return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
 
             }
@@ -135,11 +143,23 @@ public class ItemController {
         return new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleException(HttpMessageNotReadableException e) {
-        System.out.println("Ошибка в JSONE");
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(NoHandlerFoundException.class)
+//    public ResponseEntity<Error> handleException400(BadRequestException e) {
+//        System.out.println("handleException400");
+//        return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+//    }
+//
+//    @ExceptionHandler(NotFoundException.class)
+//    public ResponseEntity<Error> handleException404(NotFoundException e) {
+//        System.out.println("handleException404");
+//        return new ResponseEntity<>(new Error(404, "Not Found"), HttpStatus.BAD_REQUEST);
+//    }
+
+//    @ExceptionHandler(HttpMessageNotReadableException.class)
+//    public ResponseEntity<?> handleException(HttpMessageNotReadableException e) {
+//        System.out.println("Ошибка в JSONE");
+//        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//    }
 }
 /*
 {

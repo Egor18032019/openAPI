@@ -97,12 +97,14 @@ public class ItemService {
     @Transactional
     public void deleteItemInDB(Item item, String date) {
         String id = item.getId();
-        Item parent = repository.findByParentId(id);
         LocalDateTime updDate = getDate(date);
-        parent.setDate(updDate);
-        Integer newSize = parent.getSize() - item.getSize();
-        parent.setSize(newSize);
-        repository.save(parent);
+        Item parent = repository.findByParentId(id);
+        if (parent != null) {
+            parent.setDate(updDate);
+            Integer newSize = parent.getSize() - item.getSize();
+            parent.setSize(newSize);
+            repository.save(parent);
+        }
         List<Item> childrenForDelete = item.getChildren();
         repository.deleteAll(childrenForDelete);
         repository.deleteById(id);
@@ -112,18 +114,17 @@ public class ItemService {
     public SystemItemHistoryResponse getStatisticItems(LocalDateTime dateEndUnit) {
 
         LocalDateTime dateStartUnit = dateEndUnit.minusHours(24);
-
-        List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndUnit);
-        SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[stat.size()];
-        for (int i = 0; i < stat.size(); i++) {
-            SystemItemHistoryUnit s = Utils.statisticUnitCreate(stat.get(i));
-            units[i] = s;
-            //TODO сделать в билдер
-        }
-        SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
-        systemItemHistoryResponse.setSystemItemHistoryUnits(units);
-        return systemItemHistoryResponse;
-
+//
+//        List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndUnit);
+//        SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[stat.size()];
+//        for (int i = 0; i < stat.size(); i++) {
+//            SystemItemHistoryUnit s = Utils.statisticUnitCreate(stat.get(i));
+//            units[i] = s;
+//            //TODO сделать в билдер
+//        }
+//        SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//        systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+        return null;
     }
 
     public SystemItemHistoryResponse getStatisticItems(String id, LocalDateTime dateStartUnit, LocalDateTime dateEndTime) {
@@ -132,22 +133,63 @@ public class ItemService {
             System.out.println("не в БД ничего");
             return null;
         }
-        System.out.println(node.toString());
-        List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndTime);
-        System.out.println(stat.toString());
-        List<Item> filterStat = stat.stream().filter(f -> f.getId().equals(id)).collect(Collectors.toList());
-        System.out.println(filterStat);
-
-        // один вроде должен быть же
-        // почему тогда ответ массивом ?
-        SystemItemHistoryUnit s = Utils.statisticUnitCreate(filterStat.get(0));
-        SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
-        units[0] = s;
-        SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
-        systemItemHistoryResponse.setSystemItemHistoryUnits(units);
-        return systemItemHistoryResponse;
-
+//        // один вроде должен быть же
+//        // почему тогда ответ массивом ?
+//        // TODO спросить в телеге
+//        System.out.println(node.toString());
+//
+//        if (dateEndTime == null && dateStartUnit == null) {
+//            SystemItemHistoryUnit s = Utils.statisticUnitCreate(node);
+//            SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+//            units[0] = s;
+//            SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//            systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+//            return systemItemHistoryResponse;
+//        } else {
+//            if (dateStartUnit == null) {
+//                if (node.getDate().isBefore(dateEndTime)) {
+//                    SystemItemHistoryUnit s = Utils.statisticUnitCreate(node);
+//                    SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+//                    units[0] = s;
+//                    SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//                    systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+//                    return systemItemHistoryResponse;
+//                }
+//            }
+//            if (dateEndTime == null) {
+//                if (node.getDate().isAfter(dateStartUnit)) {
+//                    SystemItemHistoryUnit s = Utils.statisticUnitCreate(node);
+//                    SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+//                    units[0] = s;
+//                    SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//                    systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+//                    return systemItemHistoryResponse;
+//                }
+//            }
+//            if(dateEndTime!=null&dateStartUnit!=null){
+//                if (node.getDate().isAfter(dateStartUnit)) {
+//                    SystemItemHistoryUnit s = Utils.statisticUnitCreate(node);
+//                    SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+//                    units[0] = s;
+//                    SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//                    systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+//                    return systemItemHistoryResponse;
+//                }
+//            }
+//            List<Item> stat = repository.findAllByDateBetween(dateStartUnit, dateEndTime);
+//            System.out.println(stat.toString());
+//            List<Item> filterStat = stat.stream().filter(f -> f.getId().equals(id)).collect(Collectors.toList());
+//            System.out.println(filterStat);
+//            SystemItemHistoryUnit s = Utils.statisticUnitCreate(filterStat.get(0));
+//            SystemItemHistoryUnit[] units = new SystemItemHistoryUnit[1];
+//            units[0] = s;
+//            SystemItemHistoryResponse systemItemHistoryResponse = new SystemItemHistoryResponse();
+//            systemItemHistoryResponse.setSystemItemHistoryUnits(units);
+        return null;
 
     }
 
+
 }
+
+//}
