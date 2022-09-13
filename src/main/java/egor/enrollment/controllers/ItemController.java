@@ -8,6 +8,7 @@ import egor.enrollment.model.Item;
 import egor.enrollment.services.ItemService;
 import egor.enrollment.services.ValidationService;
 import egor.enrollment.utility.ConverterItemToSystemItem;
+import egor.enrollment.utility.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,23 +24,25 @@ import java.util.Optional;
 @RestController
 public class ItemController {
     private final ItemService service;
-    private final ValidationService validationService;
+
 
     @Autowired
-    public ItemController(ItemService service, ValidationService validationService) {
+    public ItemController(ItemService service) {
         this.service = service;
-        this.validationService = validationService;
+
     }
 
     @PostMapping(value = "/imports")
     public ResponseEntity<Error> addItems(@RequestBody SystemItemImportRequest request) {
-        System.out.println(request.toString());
         ResponseEntity<Error> response;
-        boolean isValidRequest = validationService.isSystemItemImportRequest(request);
-        if (isValidRequest) {
-            service.saveItems(request);
-            response = new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
-        } else response = new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+        try {
+            LocalDateTime date = Utils.getDate(request.getUpdateDate());
+        } catch (Exception e) {
+            System.out.println("dateEnd ");
+            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+        }
+        service.saveItems(request);
+        response = new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
         return response;
     }
 
@@ -48,12 +51,15 @@ public class ItemController {
                                              @RequestParam String date) {
         ResponseEntity<Error> response;
         Item item = service.findItemInDB(id);
-
-        if (!validationService.isISO8601(date)) {
+        LocalDateTime localDateTime = null;
+        try {
+            localDateTime = Utils.getDate(date);
+        } catch (Exception e) {
+            System.out.println("dateEnd ");
             return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
         }
         if (item != null) {
-            service.deleteItemInDB(item, date);
+            service.deleteItemInDB(item, localDateTime);
             response = new ResponseEntity<>(new Error(200, "OK"), HttpStatus.OK);
         } else {
             response = new ResponseEntity<>(new Error(404, "Item not found"), HttpStatus.NOT_FOUND);

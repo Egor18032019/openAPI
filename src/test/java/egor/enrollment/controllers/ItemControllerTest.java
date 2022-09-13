@@ -1,13 +1,25 @@
 package egor.enrollment.controllers;
 
+import egor.enrollment.model.Item;
+import egor.enrollment.services.ItemService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ItemControllerTest  extends AbstractRequestControllerTest {
+public class ItemControllerTest extends AbstractRequestControllerTest {
+
+    private final ItemService service;
+
+    @Autowired
+    public ItemControllerTest(ItemService service) {
+        this.service = service;
+    }
+
     @Test
     void getTest() throws Exception {
 
@@ -20,16 +32,6 @@ public class ItemControllerTest  extends AbstractRequestControllerTest {
     @Test
     void addProductsOK() throws Exception {
         String testJson1 = "{\n" +
-                "        \"items\": [\n" +
-                "            {\n" +
-                "                \"type\": \"FOLDER\",\n" +
-                "                \"id\": \"069cb8d7-bbdd-47d3-ad8f-82ef4c269df1\",\n" +
-                "                \"parentId\": null" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"updateDate\": \"2022-02-01T12:00:00Z\"\n" +
-                "    },\n" +
-                "    {\n" +
                 "        \"items\": [\n" +
                 "            {\n" +
                 "                \"type\": \"FOLDER\",\n" +
@@ -52,51 +54,16 @@ public class ItemControllerTest  extends AbstractRequestControllerTest {
                 "            }\n" +
                 "        ],\n" +
                 "        \"updateDate\": \"2022-02-02T12:00:00Z\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"items\": [\n" +
-                "            {\n" +
-                "                \"type\": \"FOLDER\",\n" +
-                "                \"id\": \"1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2\",\n" +
-                "                \"parentId\": \"069cb8d7-bbdd-47d3-ad8f-82ef4c269df1\",\n" +
-                "            },\n" +
-                "            {\n" +
-                "                \"type\": \"FILE\",\n" +
-                "                \"url\": \"/file/url3\",\n" +
-                "                \"id\": \"98883e8f-0507-482f-bce2-2fb306cf6483\",\n" +
-                "                \"parentId\": \"1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2\",\n" +
-                "                \"size\": 512\n" +
-                "            },\n" +
-                "            {\n" +
-                "                \"type\": \"FILE\",\n" +
-                "                \"url\": \"/file/url4\",\n" +
-                "                \"id\": \"74b81fda-9cdc-4b63-8927-c978afed5cf4\",\n" +
-                "                \"parentId\": \"1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2\",\n" +
-                "                \"size\": 1024\n" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"updateDate\": \"2022-02-03T12:00:00Z\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"items\": [\n" +
-                "            {\n" +
-                "                \"type\": \"FILE\",\n" +
-                "                \"url\": \"/file/url5\",\n" +
-                "                \"id\": \"73bc3b36-02d1-4245-ab35-3106c9ee1c65\",\n" +
-                "                \"parentId\": \"1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2\",\n" +
-                "                \"size\": 64\n" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"updateDate\": \"2022-02-03T15:00:00Z\"\n" +
                 "    }";
         perform(MockMvcRequestBuilders.post("/imports")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(testJson1 ))
+                .content(testJson1))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
 
     }
+
     @Test
     void addProductsFailed() throws Exception {
         String testJson1 = "{\n" +
@@ -113,35 +80,25 @@ public class ItemControllerTest  extends AbstractRequestControllerTest {
                 "    }";
         perform(MockMvcRequestBuilders.post("/imports")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(testJson1 ))
+                .content(testJson1))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
                 .andReturn();
 
     }
+
     @Test
     void addProductsAndGet() throws Exception {
-        String json =" {\n" +
-                "        \"items\": [\n" +
-                "            {\n" +
-                "                \"type\": \"FILE\",\n" +
-                "                \"url\": \"/file/url5\",\n" +
-                "                \"id\": \"73bc3b36-02d1-4245-ab35-3106c9ee1c65\",\n" +
-                "                \"parentId\": \"1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2\",\n" +
-                "                \"size\": 64\n" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"updateDate\": \"2022-02-03T15:00:00Z\"\n" +
-                "    }";
         perform(
                 MockMvcRequestBuilders.post("/imports")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json ))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestData.json))
                 .andExpect(status().isOk())
 
                 .andDo(print())
                 .andReturn();
-
+        Item item = service.findItemInDB(TestData.id1);
+        TestData.assertEquals(item, TestData.item);
     }
 
 }

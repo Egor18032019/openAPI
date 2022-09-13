@@ -11,4 +11,12 @@ import java.util.List;
 public class SystemItemImportRequest {
     private  List<SystemItemImport> items;
     private  String updateDate;
+
+    @Override
+    public String toString() {
+        return "SystemItemImportRequest{" +
+                "items=" + items.size() +
+                ", updateDate='" + updateDate + '\'' +
+                '}';
+    }
 }

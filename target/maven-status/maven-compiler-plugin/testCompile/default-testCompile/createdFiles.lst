@@ -1,3 +1,4 @@
-egor\enrollment\controllers\AbstractRequestControllerTest.class
 egor\enrollment\controllers\ItemControllerTest.class
+egor\enrollment\controllers\AbstractRequestControllerTest.class
+egor\enrollment\controllers\TestData.class
 egor\enrollment\EnrollmentAppTest.class

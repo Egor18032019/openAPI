@@ -18,7 +18,7 @@ IMPORT_BATCHES = [
             {
                 "type": "FOLDER",
                 "id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
-                "parentId": None
+                "parentId": null
             }
         ],
         "updateDate": "2022-02-01T12:00:00Z"
@@ -84,7 +84,45 @@ IMPORT_BATCHES = [
         "updateDate": "2022-02-03T15:00:00Z"
     }
 ]
+/*
+{
+        "items": [
+            {
+                "type": "FILE",
+                "url": "/file/url1",
+                "id": "1",
+                "parentId": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
+                "size": 64
+            }
+        ],
+        "updateDate": "2022-02-03T15:00:00Z"
+    }
 
+     {
+            "items": [
+                {
+                    "type": "FOLDER",
+                    "id": "d515e43f-f3f6-4471-bb77-6b455017a2d2",
+                    "parentId": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
+                },
+                {
+                    "type": "FILE",
+                    "url": "/file/url1",
+                    "id": "863e1a7a-1304-42ae-943b-179184c077e3",
+                    "parentId": "d515e43f-f3f6-4471-bb77-6b455017a2d2",
+                    "size": 128
+                },
+                {
+                    "type": "FILE",
+                    "url": "/file/url2",
+                    "id": "b1d8fd7d-2ae3-47d5-b2f9-0f094af800d4",
+                    "parentId": "d515e43f-f3f6-4471-bb77-6b455017a2d2",
+                    "size": 256
+                }
+            ],
+            "updateDate": "2022-02-02T12:00:00Z"
+        }
+    */
 EXPECTED_TREE = {
     "type": "FOLDER",
     "id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",

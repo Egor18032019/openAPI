@@ -1,9 +1,9 @@
 package egor.enrollment.services;
 
 import egor.enrollment.components.schemas.*;
+import egor.enrollment.exception.BadRequestException;
 import egor.enrollment.model.Item;
 import egor.enrollment.repository.ItemRepository;
-import egor.enrollment.utility.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -22,63 +21,93 @@ public class ItemService {
         this.repository = repository;
     }
 
-
+//          - в одном запросе не может быть двух элементов с одинаковым id
     @Transactional
     public void saveItems(SystemItemImportRequest request) {
         List<SystemItemImport> items = request.getItems();
+        System.out.println(items);
         LocalDateTime date = getDate(request.getUpdateDate());
         List<Item> itemsForSaveInDB = new ArrayList<>();
-        List<String> parentIds = new ArrayList<>();
         for (SystemItemImport item : items) {
-            SystemItemType type;
-            if (item.getType().equals("FILE")) type = SystemItemType.FILE;
-            else type = SystemItemType.FOLDER;
+            String url = item.getUrl();
 
-            itemsForSaveInDB.add(new Item(item.getId(), item.getUrl(), type, date, item.getSize()));
-            parentIds.add(item.getParentId());
-            for (int i = 0; i < itemsForSaveInDB.size(); i++) {
-                Item element = itemsForSaveInDB.get(i);
-                String parentId = parentIds.get(i);
-                if (null == parentId) element.setParent(null);
-                else {
-                    boolean found = false;
-                    for (int j = 0; j < parentIds.size(); j++) {
-                        Item potentialParent = itemsForSaveInDB.get(j);
-                        if (potentialParent.getId().equals(parentId)) {
-                            element.setParent(potentialParent);
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        Optional<Item> potentialParent = repository.findById(parentId);
-                        if (potentialParent.isPresent()) element.setParent(potentialParent.get());
-                        else element.setParent(null);
-                    }
-                }
-                itemsForSaveInDB.set(i, element);
+//            - поле id не может быть равно null
+            String workdeID = item.getId();
+            if (!workdeID.isBlank()) {
+                throw new BadRequestException("Validation Failed");
             }
+            SystemItemType type;
+            if (item.getType().equals("FILE")) {
+                type = SystemItemType.FILE;
+//                        - поле url при импорте папки всегда должно быть равно null
+                if (!url.isBlank()) {
+                    throw new BadRequestException("Validation Failed");
+                }
+//                - поле size при импорте папки всегда должно быть равно null
+
+            } else {
+//                - поле size для файлов всегда должно быть больше 0
+
+                type = SystemItemType.FOLDER;
+            }
+            Item workderItem = new Item(workdeID, url, type, date, item.getSize());
+            Optional<Item> oldItem = repository.findById(workdeID);
+            /*
+             Изменение типа элемента с папки на файл и с файла на папку не допускается.
+        TODO  надо ли выдавать клиенту информаци об этом ?? Жду ответа в телеге
+             */
+            String parentId = item.getParentId();
+
+            Optional<Item> parentItem = repository.findById(parentId);
+            if (oldItem.isPresent()) {
+                if (oldItem.get().getType() != workderItem.getType()) {
+                    throw new BadRequestException("Validation Failed");
+                }
+//            Импортирует элементы файловой системы. Элементы импортированные повторно обновляют текущие.
+
+
+                if (parentItem.isPresent()) {
+                    Item workedParentItem = parentItem.get();
+                    if (workedParentItem.getType() != SystemItemType.FOLDER) {
+                        //                - родителем элемента может быть только папка
+                        throw new BadRequestException("Validation Failed");
+                    }
+                    Integer size = workedParentItem.getSize();
+                    System.out.println("size");
+                    System.out.println(size);
+                    if (size == null) {
+                        size = 0;
+                    }
+                    Integer newSize = workderItem.getSize() - oldItem.get().getSize();
+                    workedParentItem.setSize(newSize + size);
+                    workedParentItem.setDate(workderItem.getDate());
+                    repository.save(workedParentItem);
+                }
+            } else {
+
+
+                if (parentItem.isPresent()) {
+                    Item workedParentItem = parentItem.get();
+                    Integer size = workedParentItem.getSize();
+                    System.out.println("size");
+                    System.out.println(size);
+                    if (size == null) {
+                        size = 0;
+                    }
+                    workedParentItem.setSize(workderItem.getSize() + size);
+                    workedParentItem.setDate(workderItem.getDate());
+                    repository.save(workedParentItem);
+                } else {
+                    workderItem.setParent(null);
+                }
+            }
+            itemsForSaveInDB.add(workderItem);
         }
-        if (itemsForSaveInDB.size() != 0) updateDate(itemsForSaveInDB.get(0));
         repository.saveAll(itemsForSaveInDB);
     }
 
     public LocalDateTime getDate(String strDate) {
         return LocalDateTime.parse(strDate, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH));
-    }
-
-    private void updateDate(Item item) {
-        Item parent = item.getParent();
-        if (null != parent) {
-            parent.setDate(item.getDate());
-            updateDate(parent);
-        }
-    }
-
-    @Transactional
-    public Item findItemOrNull(String id) {
-        Optional<Item> product = repository.findById(id);
-        return product.orElse(null);
     }
 
     @Transactional
@@ -94,9 +123,8 @@ public class ItemService {
     }
 
     @Transactional
-    public void deleteItemInDB(Item item, String date) {
+    public void deleteItemInDB(Item item, LocalDateTime updDate) {
         String id = item.getId();
-        LocalDateTime updDate = getDate(date);
         Item parent = repository.findByParentId(id);
         if (parent != null) {
             parent.setDate(updDate);
@@ -126,7 +154,8 @@ public class ItemService {
         return null;
     }
 
-    public SystemItemHistoryResponse getStatisticItems(String id, LocalDateTime dateStartUnit, LocalDateTime dateEndTime) {
+    public SystemItemHistoryResponse getStatisticItems(String id, LocalDateTime dateStartUnit, LocalDateTime
+            dateEndTime) {
         Item node = repository.findById(id).orElse(null);
         if (node == null) {
             System.out.println("не в БД ничего");
