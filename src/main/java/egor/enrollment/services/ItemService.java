@@ -31,7 +31,6 @@ public class ItemService {
         List<String> parentIds = new ArrayList<>();
         for (SystemItemImport item : items) {
             SystemItemType type;
-            //TODO переделать енумы
             if (item.getType().equals("FILE")) type = SystemItemType.FILE;
             else type = SystemItemType.FOLDER;
 

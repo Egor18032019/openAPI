@@ -2,11 +2,8 @@ package egor.enrollment.components.schemas;
 
 import lombok.*;
 
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@Getter
-@Setter
-@ToString
 public class SystemItemHistoryUnit {
     private String id;
     private String url;

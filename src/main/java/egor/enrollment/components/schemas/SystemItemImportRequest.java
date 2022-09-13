@@ -1,9 +1,13 @@
 package egor.enrollment.components.schemas;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 public class SystemItemImportRequest {
     private  List<SystemItemImport> items;
     private  String updateDate;

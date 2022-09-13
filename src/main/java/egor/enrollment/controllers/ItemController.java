@@ -35,7 +35,6 @@ public class ItemController {
     public ResponseEntity<Error> addItems(@RequestBody SystemItemImportRequest request) {
         System.out.println(request.toString());
         ResponseEntity<Error> response;
-        //TODO так ли ??
         boolean isValidRequest = validationService.isSystemItemImportRequest(request);
         if (isValidRequest) {
             service.saveItems(request);
@@ -65,11 +64,13 @@ public class ItemController {
 
     @GetMapping("/nodes/{id}")
     public ResponseEntity<ResponseAbs> getItems(@PathVariable String id) {
-
+        System.out.println("пришло " + id);
+        if (id.isEmpty() || id.trim().isBlank()) {
+            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+        }
         Item item = service.findItemInDB(id);
         System.out.println(item);
         if (item != null) {
-// Item in SystemItem
             SystemItem systemItem = ConverterItemToSystemItem.toShopUnit(item);
             return new ResponseEntity<>(systemItem, HttpStatus.OK);
         } else {
@@ -143,23 +144,7 @@ public class ItemController {
         return new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
     }
 
-//    @ExceptionHandler(NoHandlerFoundException.class)
-//    public ResponseEntity<Error> handleException400(BadRequestException e) {
-//        System.out.println("handleException400");
-//        return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity<Error> handleException404(NotFoundException e) {
-//        System.out.println("handleException404");
-//        return new ResponseEntity<>(new Error(404, "Not Found"), HttpStatus.BAD_REQUEST);
-//    }
 
-//    @ExceptionHandler(HttpMessageNotReadableException.class)
-//    public ResponseEntity<?> handleException(HttpMessageNotReadableException e) {
-//        System.out.println("Ошибка в JSONE");
-//        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//    }
 }
 /*
 {

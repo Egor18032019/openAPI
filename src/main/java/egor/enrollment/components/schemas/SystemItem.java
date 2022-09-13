@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import java.util.List;
 @EqualsAndHashCode(callSuper = true)
-@Data //TODO обдумать тут
+@Data
 @AllArgsConstructor
 public class SystemItem extends ResponseAbs {
     private  String id;
