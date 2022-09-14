@@ -104,6 +104,8 @@ IMPORT_BATCHES = [
                     "type": "FOLDER",
                     "id": "d515e43f-f3f6-4471-bb77-6b455017a2d2",
                     "parentId": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
+                    "url": null,
+                      "size": null
                 },
                 {
                     "type": "FILE",

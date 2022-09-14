@@ -1,16 +1,15 @@
 package egor.enrollment.components.schemas;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import java.util.List;
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@ToString
+
+
+@Data
 public class SystemItemImportRequest {
-    private  List<SystemItemImport> items;
-    private  String updateDate;
+      List<SystemItemImport> items;
+      String updateDate;
 
     @Override
     public String toString() {
