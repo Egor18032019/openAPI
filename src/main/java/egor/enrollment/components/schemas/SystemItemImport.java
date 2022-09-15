@@ -1,19 +1,23 @@
 package egor.enrollment.components.schemas;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sun.istack.NotNull;
 import lombok.*;
 
 @Data
-public class SystemItemImport {
-      String id = null;
-      String type = null;
-      String parentId = null;
-      String url = null;
-      Integer size = null;
-
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+ public class SystemItemImport {
+    private String id;
+    private String type;
+    private String parentId;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String url;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private Integer size;
 }
 //  {
 //          "items": [

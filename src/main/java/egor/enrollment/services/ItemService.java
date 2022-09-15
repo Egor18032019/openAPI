@@ -33,12 +33,12 @@ public class ItemService {
         Set<String> elements = new HashSet<>();
         for (SystemItemImport item : items) {
             String workdeID = item.getId();
+            String url = item.getUrl();
+            Integer size = item.getSize();
             if (!elements.add(workdeID)) {
                 System.out.println(" - в одном запросе не может быть двух элементов с одинаковым i");
                 throw new BadRequestException("Validation Failed");
             }
-            String url = item.getUrl();
-            Integer size = item.getSize();
             if (workdeID.isEmpty()) {
                 System.out.println(workdeID + "  поле id не может быть равно null");
                 throw new BadRequestException("Validation Failed");
@@ -86,7 +86,8 @@ public class ItemService {
                         System.out.println("  родителем элемента может быть только папка");
                         throw new BadRequestException("Validation Failed");
                     }
-                    Integer sizeParentFolder = parentSizeMap.get(parentId);                    if (size == null && sizeParentFolder == null) {
+                    Integer sizeParentFolder = parentSizeMap.get(parentId);
+                    if (size == null && sizeParentFolder == null) {
                         parentSizeMap.put(parentId, null);
                     }
                     if (sizeParentFolder == null) {
@@ -175,8 +176,6 @@ public class ItemService {
             if (parentSize != null) {
                 Integer newSize = parentSize - item.getSize();
                 parent.setSize(newSize);
-            } else {
-                parent.setSize(item.getSize());
             }
             repository.save(parent);
         }
@@ -277,40 +276,42 @@ public class ItemService {
 
     }
 
-    private void updateDateAndSizeOnDB(String key, LocalDateTime date, Integer size) {
-        Optional<Item> item = repository.findById(key);
-        if (item.isPresent()) {
-            Item workedItem = item.get();
-            workedItem.setDate(date);
-            workedItem.setSize(size);
-            repository.save(workedItem);
-            Item parent = workedItem.getParent();
-            if (null != parent) {
-                Integer sizeChildren = workedItem.getSize();
-                Integer sizeParentFolder = parent.getSize();
-
-                if (sizeChildren == null && sizeParentFolder == null) {
-                    parent.setSize(null);
-                }
-                if (sizeParentFolder == null) {
-                    parent.setSize(sizeChildren);
-                }
-                if (sizeChildren == null) {
-                    parent.setSize(sizeParentFolder);
-                }
-                if (sizeChildren != null && sizeParentFolder != null) {
-                    parent.setSize(sizeChildren + sizeParentFolder);
-                }
-                parent.setDate(date);
-                repository.save(parent);
-                Item nextParent = parent.getParent();
-                if (nextParent != null) {
-                    String nextKey = nextParent.getId();
-                    updateDateAndSizeOnDB(nextKey, date, size);
-                }
-            }
+    private void updateDateAndSizeOnDB(String key, LocalDateTime date, Integer sizeChildren) {
+        if (key.equals("069cb8d7-bbdd-47d3-ad8f-82ef4c269df1")) {
+            System.out.println("069cb8d7-bbdd-47d3-ad8f-82ef4c269df1");
         }
 
+        Optional<Item> item = repository.findById(key);
+        if (item.isPresent()) {
+            Item parent = item.get();
+
+            Integer sizeParentFolder = parent.getSize();
+            Integer newSizeForParent = null;
+            if (sizeChildren == null && sizeParentFolder == null) {
+                parent.setSize(null);
+            }
+            if (sizeParentFolder == null) {
+                newSizeForParent = sizeChildren;
+                parent.setSize(newSizeForParent);
+            }
+            if (sizeChildren == null) {
+                newSizeForParent = sizeParentFolder;
+                parent.setSize(newSizeForParent);
+            }
+            if (sizeChildren != null && sizeParentFolder != null) {
+                newSizeForParent = sizeChildren + sizeParentFolder;
+                parent.setSize(newSizeForParent);
+            }
+            parent.setDate(date);
+            repository.save(parent);
+            Item nextParent = parent.getParent();
+            if (nextParent != null) {
+                String nextKey = nextParent.getId();
+                updateDateAndSizeOnDB(nextKey, date, newSizeForParent);
+            }
+        }
     }
+
 }
+
 

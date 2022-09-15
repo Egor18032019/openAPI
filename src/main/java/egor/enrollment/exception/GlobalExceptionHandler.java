@@ -36,7 +36,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleException(HttpMessageNotReadableException e) {
-        System.out.println(e.getHttpInputMessage().toString());
         System.out.println("              Ошибка в JSONE");
         return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
     }

@@ -33,13 +33,14 @@ public class ItemController {
     }
 
     @PostMapping(value = "/imports")
-    public ResponseEntity<Error> addItems(@RequestBody SystemItemImportRequest request) {
+    public ResponseEntity<Error> addItems(@RequestBody( ) SystemItemImportRequest request) {
+        System.out.println("Пришло ???");
         ResponseEntity<Error> response;
         try {
             LocalDateTime date = Utils.getDate(request.getUpdateDate());
+            System.out.println(" формат даты не верен");
         } catch (Exception e) {
-            System.out.println("dateEnd ");
-            return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
+             return new ResponseEntity<>(new Error(400, "Validation Failed"), HttpStatus.BAD_REQUEST);
         }
         service.saveItems(request);
         response = new ResponseEntity<>(new Error(200, "Success"), HttpStatus.OK);
