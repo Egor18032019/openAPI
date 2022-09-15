@@ -1,8 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: egor.enrollment.controllers.ItemControllerTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 33.727 s <<< FAILURE! - in egor.enrollment.controllers.ItemControllerTest
-addProductsOK  Time elapsed: 0.305 s  <<< FAILURE!
-java.lang.AssertionError: Status expected:<200> but was:<400>
-	at egor.enrollment.controllers.ItemControllerTest.addProductsOK(ItemControllerTest.java:61)
-
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 82.962 s - in egor.enrollment.controllers.ItemControllerTest
